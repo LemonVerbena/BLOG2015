@@ -129,7 +129,12 @@ module.exports = function(app){
 
   app.get('/post', checkLogin);
   app.get('/post',function(req,res){
-    res.render('post',{title:'发表文章'});
+    res.render('post',{
+      title:'发表文章',
+      user: req.session.user,
+      success: req.flash('success').toString(),
+      error: req.flash('error').toString()
+    });
   });
 
   app.post('/post', checkLogin);
