@@ -1,23 +1,23 @@
-//通过require()加载express、path模块。以及routes文件夹下的index.js 和user.js路由文件
+/*通过require()加载express、path模块。以及routes文件夹下的index.js 和user.js路由文件*/
 var express = require('express');
 var path = require('path');
 var favicon = require('serve-favicon');
 var logger = require('morgan');
 var cookieParser = require('cookie-parser');
 var bodyParser = require('body-parser');
-//加载路由文件
+/*加载路由文件*/
 var routes = require('./routes/index');
 var users = require('./routes/users');
 
 var settings = require('./settings');  //加载settings.js文件
-var flash = require('connect-flash');  //加载connect-flash模块
 
-//加载会话支持模块，并利用mongodb存储。添加app.use()使用方式
-var session = require('express-session');
+/*加载第三方模块*/
+var flash = require('connect-flash');  //加载connect-flash模块
+var session = require('express-session'); //加载会话支持模块，并利用mongodb存储。
 var MongoStore = require('connect-mongo')(session);
+var multer = require('multer');
 
 var app = express();  //生成一个express实例app
-
 app.set('port', process.env.PORT||3000);//第一章  添加
 // view engine setup
 app.set('views', path.join(__dirname, 'views'));//设置 views 文件夹为存放视图文件的目录, 即存放模板文件的地方,__dirname 为全局变量,存储当前正在执行的脚本所在的目录。
@@ -32,6 +32,7 @@ app.use(cookieParser());//加载解析cookie的中间件
 app.use(express.static(path.join(__dirname, 'public')));//设置public文件夹为存放静态文件的目录
 app.use(flash());
 
+/*添加app.use(session)使用方式*/
 app.use(session({
     secret: settings.cookieSecret,    //防止篡改cookie
     key: settings.db,    //cookie name
@@ -42,6 +43,13 @@ app.use(session({
         port: settings.port  //数据库端口号
     })
 }));
+/*添加multer上传文件功能，app.use(multer)的使用方式*/
+app.use(multer({
+        dest: './public/images',
+        rename: function(fieldname,filename){
+            return filename;
+        }
+    }));
 
 ////路由控制器
 //app.use('/', routes);
