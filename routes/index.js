@@ -24,7 +24,7 @@ module.exports = function(app){
 //    });
 //  });
   app.get('/', function (req, res) {
-    Post.get(null, function (err, posts) {
+    Post.getAll(null, function (err, posts) { //第一个参数为“null”，则遍历所有已发表的文章，在主页显示。
       if (err) {
         posts = [];
       }
@@ -57,7 +57,7 @@ module.exports = function(app){
     //检验用户两次输入的密码是否一致
     if (password_re != password) {
       req.flash('error', '两次输入的密码不一致!');
-      return res.redirect('/reg');//返回注册页;            redirect:重定向，实现页面跳转。
+      return res.redirect('/reg');//返回注册页;        redirect:重定向，实现页面跳转。
     }
     //生成密码的 md5 值
     var md5 = crypto.createHash('md5'),
@@ -173,6 +173,48 @@ module.exports = function(app){
     res.redirect('/upload');
   });
 
+  app.get('/u/:name',function(req,res){
+    User.get(req.params.name,function(err,user){
+      if(err){
+        req.flash('error',err);
+        return res.redirect('/');
+      }
+      if(!user){
+        req.flash('error','用户不存在！');
+        return  res.redirect('/');
+      }
+      Post.getAll(user.name,function(err,docs){
+        if(err){
+          req.flash('error',err);
+          return res.redirect('/');
+        }
+        res.render('user',{
+          title: user.name,
+          posts: docs,
+          user: req.session.user,
+          success: req.flash('success').toString(),
+          error: req.flash('error').toString()
+        })
+      });
+    });
+  });
+
+  app.get('/u/:name/:day/:title',function(req,res){
+    Post.getOne(req.params.name,req.params.day,req.params.title,function(err,doc){
+      if(err){
+        req.flash('error',err);
+        return res.redirect('/');
+      }
+      res.render('article',{
+        title:req.params.title,
+        user: req.session.user,
+        post: doc,
+        success: req.flash('success').toString(),
+        error: req.flash('error').toString()
+      });
+    })
+
+  });
 
 ///  checkLogin()
   function checkLogin(req, res, next) {
